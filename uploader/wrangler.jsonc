@@ -12,7 +12,20 @@
 	],
 	"observability": {
 		"enabled": true
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "tcg_image_metadata_db",
+			"database_name": "tcg-image-metadata-db",
+			"database_id": "db31afbd-ccb3-4d07-b244-f7ae1c3021aa"
+		}
+	],
+	"r2_buckets": [
+		{
+			"bucket_name": "image-bucket",
+			"binding": "image_bucket"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
