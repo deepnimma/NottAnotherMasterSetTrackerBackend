@@ -1,9 +1,8 @@
 name: Deploy Cloudflare Workers
 
 on:
-  push:
-#  release:
-#    types: [published]
+  release:
+    types: [published]
 
 jobs:
   deploy-downloader:
