@@ -9,6 +9,7 @@ jobs:
   deploy-downloader:
     runs-on: ubuntu-latest
     name: Deploy downloader to production
+    working-directory: ./downloader
     environment: prod
 
     steps:
