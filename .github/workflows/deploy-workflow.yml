@@ -9,7 +9,6 @@ jobs:
   deploy-downloader:
     runs-on: ubuntu-latest
     name: Deploy downloader to production
-    working-directory: ./downloader
     environment: prod
 
     steps:
@@ -23,6 +22,7 @@ jobs:
           cache: "npm"
 
       - name: Deploy Downloader Worker
+        working-directory: ./downloader
         run: |
           npm i -D wrangler@4
           npx wrangler deploy
