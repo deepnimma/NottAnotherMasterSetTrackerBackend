@@ -24,3 +24,9 @@ jobs:
         working-directory: ./downloader
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Deploy Uploader Worker
+        run: npx wrangler deploy
+        working-directory: ./uploader
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
