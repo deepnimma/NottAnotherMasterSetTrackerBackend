@@ -14,16 +14,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: downloader
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "latest"
           cache: "npm"
+          cache-dependency-path: downloader/package-lock.json
 
       - name: Deploy Downloader Worker
+        working-directory: ./downloader
         run: |
           npm i -D wrangler@4
           npx wrangler deploy
