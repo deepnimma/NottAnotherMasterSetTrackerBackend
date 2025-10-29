@@ -35,7 +35,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy uploader to production
     environment: prod
-    needs: deploy-downloader
 
     steps:
       - name: Checkout
