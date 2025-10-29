@@ -27,7 +27,7 @@ jobs:
         run: |
           npm i -D wrangler@4
           npx wrangler deploy
-          npx wrangler d1 execute tcg-image-metadata-db --file=./schemas/schema.sql
+          npx wrangler d1 execute tcg-image-metadata-db --remote --file=./schemas/schema.sql
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
