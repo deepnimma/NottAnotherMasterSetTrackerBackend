@@ -29,7 +29,6 @@ jobs:
             echo "******"
 
       - name: Deploy Uploader Worker
-        id: deploy
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
