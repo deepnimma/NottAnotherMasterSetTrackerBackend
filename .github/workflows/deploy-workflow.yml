@@ -13,8 +13,9 @@ jobs:
 
     steps:
       - name: Checkout
-        working-directory: ./downloader
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: downloader
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -23,7 +24,6 @@ jobs:
           cache: "npm"
 
       - name: Deploy Downloader Worker
-        working-directory: ./downloader
         run: |
           npm i -D wrangler@4
           npx wrangler deploy
