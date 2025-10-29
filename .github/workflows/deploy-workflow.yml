@@ -35,6 +35,7 @@ jobs:
   deploy-uploader:
     runs-on: ubuntu-latest
     name: Deploy uploader to production
+    environment: prod
 
     steps:
       - name: Checkout
