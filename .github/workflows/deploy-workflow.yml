@@ -13,11 +13,11 @@ jobs:
 
     steps:
       - name: Checkout
+        working-directory: ./downloader
         uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
-        working-directory: ./downloader
         with:
           node-version: "latest"
           cache: "npm"
