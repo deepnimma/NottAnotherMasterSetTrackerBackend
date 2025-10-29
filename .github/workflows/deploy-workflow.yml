@@ -16,12 +16,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy Downloader Worker
-        run: npx wrangler deploy
-        working-directory: ./downloader
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-
-      - name: Deploy Downloader Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -40,9 +34,3 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           environment: production
           workingDirectory: "uploader"
-
-      - name: Deploy Uploader Worker
-        run: npx wrangler deploy
-        working-directory: ./uploader
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
