@@ -14,6 +14,11 @@
 			"binding": "tcg_image_metadata_db",
 			"database_name": "tcg-image-metadata-db",
 			"database_id": "db31afbd-ccb3-4d07-b244-f7ae1c3021aa"
+		},
+        {
+			"binding": "tcg_preset_sets_db",
+			"database_name": "tcg_preset_sets_db",
+			"database_id": "9748ab78-f8ab-4746-b9ea-c83777d0ff0f"
 		}
 	],
 	"r2_buckets": [
