@@ -1,5 +1,5 @@
 -- Migration number: 0001 	 2025-11-03T21:29:42.203Z
-CREATE TABLE image_metadata {
+CREATE TABLE image_metadata (
     -- Synthetic primary key. Doesn't really matter much to us.
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -11,13 +11,13 @@ CREATE TABLE image_metadata {
         'jungle',
         'base-set-2',
         'team-rocket'
-    ))
+    )),
     cardNumber INTEGER NOT NULL,
 
     version INTEGER NOT NULL CHECK(version = 1),
     cardTitle TEXT NOT NULL,
     mainPokemon TEXT NOT NULL,
-    hasReverseHolo INTEGER NOT NULL CHECK(hasReverseHolo IN (0, 1))
+    hasReverseHolo INTEGER NOT NULL CHECK(hasReverseHolo IN (0, 1)),
     illustrator TEXT NOT NULL,
 
     mainEnergy TEXT NOT NULL CHECK(
@@ -49,7 +49,7 @@ CREATE TABLE image_metadata {
             'normal',
             'trainer'
         )
-    )
+    ),
 
     releaseDate TEXT NOT NULL CHECK(date(releaseDate) NOT NULL),
 
@@ -58,4 +58,4 @@ CREATE TABLE image_metadata {
     tags TEXT,
 
     UNIQUE (setName, cardNumber)
-}
+);
