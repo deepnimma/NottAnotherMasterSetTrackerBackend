@@ -1,4 +1,5 @@
 from http import HTTPMethod, HTTPStatus
+from wsgiref import headers
 
 import image
 import preset
@@ -6,114 +7,72 @@ import logging
 
 from workers import Request, Response, Headers
 
+from uploader.src.response import create_bad_request
+
 logger = logging.getLogger(__name__)
 
+__valid_routes = ["image", "preset"]
 
 async def handle_request(request: Request, valid_uploader_token: str) -> Response:
-    request_data = await _parse_request(request)
+    # First get form data
+    form_data = await request.form_data()
 
-    if "error" in request_data:
-        return Response(
-            f"An error occurred. Message: {str(request_data["error"])}",
-            HTTPStatus.INTERNAL_SERVER_ERROR,
-        )
-
-    field_check_flag = _check_request_fields(request_data, valid_uploader_token)
-
-    if field_check_flag is not None:
-        return field_check_flag
-
-    return await _route_request(request_data)
-
-def _check_request_fields(request_data: dict, valid_uploader_token: str) -> Response | None:
-    missing_list = []
-    request_body = request_data.get("body", dict())
-    valid_routes = ["image", "preset"]
-
-    # Check Body
-    if "image" not in request_body:
-        missing_list.append("image")
-    if "routing" not in request_body:
-        missing_list.append("routing")
-    if "image_metadata" not in request_body:
-        missing_list.append("image_metadata")
-
-    if len(missing_list) > 0:
-        return __create_bad_request_response(f"The following fields are missing in the body of the request: {str(missing_list)}\n")
-
-    # Check Routing
-    if request_body.get("routing") not in valid_routes:
-        return __create_bad_request_response(f"Routes has to be in the following list of values: {str(valid_routes)}\n")
-
-    # Check Request Method
-    request_method = request_data.get("method", HTTPMethod.GET)
-    if request_method is not HTTPMethod.POST:
-        return Response(
-            f"This HTTP Method '{request_method}' is currently unsupported.\n", HTTPStatus.METHOD_NOT_ALLOWED
-        )
+    # Then get headers
+    headers = request.headers
 
     # Check Headers
-    request_headers = request_data.get("headers", dict())
+    flag, route = __check_headers(headers, valid_uploader_token)
 
-    logger.info(request_headers)
-    print(request_headers)
-    if "Uploader-Token" not in request_headers:
-        return __create_bad_request_response(f"The following fields are missing in the headers of the request: Uploader-Token\n")
+    if flag is not None:
+        return flag
 
-    if request_headers.get("Uploader-Token") != valid_uploader_token:
-        return Response("Your uploader token is not valid.\n", HTTPStatus.FORBIDDEN)
+    # We need to route between image and preset and move the below from here to image.py
+    # Take the routing information in the headers so it's easiers, the uploaders is internal use only
 
-    return None
+    # Get Data
+    if (route == "image") return image.handle(form_data)
+    elif (route == "preset") return preset.handle(form_data)
+    metadata = form_data.get("metadata", None)
+    image = form_data.get("image", None)
 
-def __create_bad_request_response(msg: str) -> Response:
-    return Response(msg, HTTPStatus.BAD_REQUEST)
-
-async def _parse_request(
-    request: Request,
-) -> dict[str, dict | Headers | HTTPMethod | Exception]:
-    """
-    Parses the incoming request into an easier to access dict
-
-    :param request: Incoming, unparsed request straight from the user.
-    :return: A parsed request with body, headers, and a method field
-    """
-    try:
-        request_data = await request.json()
-    except Exception as e:
-        return {"error": e}
-
-    request_data = {
-        "body": request_data,
-        "headers": request.headers,
-        "method": request.method,
-    }
-
-    return request_data
-
-
-async def _route_request(
-    request_data: dict[str, dict | Headers | HTTPMethod | Exception],
-) -> Response:
-    # First check uploader token
-    # - Parse uploader token from headers
-
-    # Finally check body field
-    # If it says "preset", send to preset.py
-    # Otherwise, send to image.py
-    routing_info = request_data["body"]["routing"]
-    if routing_info is None:
-        return Response(
-            "Body must contain routing info: image,preset.", HTTPStatus.BAD_REQUEST
+    if metadata is None or image is None:
+        return create_bad_request(
+            "Either 'metadata' or 'image' field was not provided.\n"
         )
 
-    if routing_info.lower() == "image":
-        logger.info("Routing to image.")
-        return Response("Test response.\n", HTTPStatus.OK)
-        return await image.handle(request_data)
-    elif routing_info.lower() == "preset":
-        logger.info("Routing to preset.")
-        return await preset.handle(request_data)
-    else:
-        return Response(
-            "Body routing info must be either: image,preset", HTTPStatus.BAD_REQUEST
+    request_data = {"metadata": metadata, "image": image, "headers": headers}
+
+
+def __check_headers(
+    headers: dict[str, str], valid_uploader_token: str
+) -> tuple[Response | None, str]:
+    """
+    Checks if the headers contain a valid Uploader-Token, and valid Routing information
+
+    :param headers: the headers provided with the request
+    :param valid_uploader_token: the valid uploader token present in the environment
+    :return: A tuple with response and the routing information. If a response is provided, then the routing information is empty. Otherwise, if all checks pass then Response is None and the routing information is provided.
+    """
+
+    if "Uploader-Token" not in headers:
+        return (
+            create_bad_request(
+                "Field 'Uploader-Token' must be present in the headers.\n"
+            ),
+            "",
         )
+
+    if headers.get("Uploader-Token") != valid_uploader_token:
+        return create_bad_request("Valid 'Uploader-Token' was not passed.\n"), ""
+
+    if "Routing" not in headers:
+        return (
+            create_bad_request("Field 'Routing' must be present in the headers.\n"),
+            "",
+        )
+
+    route_info = headers.get("Routing").lower()
+    if route_info not in __valid_routes:
+        return create_bad_request("Field 'Routing' must be 'image' or 'preset'.\n"), ""
+
+    return None, route_info
