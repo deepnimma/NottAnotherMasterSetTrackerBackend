@@ -53,11 +53,12 @@ jobs:
         run: npm install -g wrangler
 
       - name: Upload secrets to Cloudflare
-        env:
-          UPLOADER_TOKEN: ${{ secrets.UPLOADER_SECRET }}
-
         run: |
           echo $UPLOADER_TOKEN | wrangler secret put UPLOADER_TOKEN --name uploader
+        env:
+          UPLOADER_TOKEN: ${{ secrets.UPLOADER_SECRET }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Deploy Uploader Worker
         working-directory: ./uploader
