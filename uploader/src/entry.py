@@ -1,9 +1,5 @@
 from workers import Response, WorkerEntrypoint, Request
 from router import handle_request
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 class Default(WorkerEntrypoint):
     async def fetch(self, request: Request):

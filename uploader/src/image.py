@@ -1,3 +1,4 @@
+import pyodide.ffi
 from workers import Response
 import json
 import uuid
@@ -20,13 +21,16 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
             "Either 'metadata' or 'image' is required.\n"
         )
 
-    image_bytes = await image_data.text()
-    # metadata_file = json.loads(await metadata.text())
+    image_bytes = await image_data.bytes()
     image_uuid = str(uuid.uuid4())
+
+    print(f"Generated Image UUID: {image_uuid}")
+
+    image_js_buffer = pyodide.ffi.to_js(image_bytes)
 
     await r2_bucket.put(
         image_uuid,
-        image_bytes,
+        image_js_buffer,
         http_metadata={"contentType": "image/png"}
     )
 
