@@ -1,27 +1,21 @@
-from http import HTTPMethod, HTTPStatus
-from wsgiref import headers
-
-import image
-import preset
 import logging
 
 from workers import Request, Response, Headers
 
-from uploader.src.response import create_bad_request
+import image as image_handler
+import preset as preset_handler
+import responses
 
 logger = logging.getLogger(__name__)
 
 __valid_routes = ["image", "preset"]
 
-async def handle_request(request: Request, valid_uploader_token: str) -> Response:
+async def handle_request(request: Request, env) -> Response:
     # First get form data
     form_data = await request.form_data()
 
-    # Then get headers
-    headers = request.headers
-
     # Check Headers
-    flag, route = __check_headers(headers, valid_uploader_token)
+    flag, route = __check_headers(request.headers, env.UPLOADER_TOKEN)
 
     if flag is not None:
         return flag
@@ -30,21 +24,14 @@ async def handle_request(request: Request, valid_uploader_token: str) -> Respons
     # Take the routing information in the headers so it's easiers, the uploaders is internal use only
 
     # Get Data
-    if (route == "image") return image.handle(form_data)
-    elif (route == "preset") return preset.handle(form_data)
-    metadata = form_data.get("metadata", None)
-    image = form_data.get("image", None)
-
-    if metadata is None or image is None:
-        return create_bad_request(
-            "Either 'metadata' or 'image' field was not provided.\n"
-        )
-
-    request_data = {"metadata": metadata, "image": image, "headers": headers}
+    if route == "image":
+        return await image_handler.handle(form_data, env.image_bucket, env.tcg_image_metadata_db)
+    else:
+        return await preset_handler.handle(form_data, env.tcg_preset_sets_db)
 
 
 def __check_headers(
-    headers: dict[str, str], valid_uploader_token: str
+    headers: Headers, valid_uploader_token: str
 ) -> tuple[Response | None, str]:
     """
     Checks if the headers contain a valid Uploader-Token, and valid Routing information
@@ -56,23 +43,23 @@ def __check_headers(
 
     if "Uploader-Token" not in headers:
         return (
-            create_bad_request(
+            responses.create_bad_request_response(
                 "Field 'Uploader-Token' must be present in the headers.\n"
             ),
             "",
         )
 
     if headers.get("Uploader-Token") != valid_uploader_token:
-        return create_bad_request("Valid 'Uploader-Token' was not passed.\n"), ""
+        return responses.create_bad_request_response("Valid 'Uploader-Token' was not passed.\n"), ""
 
     if "Routing" not in headers:
         return (
-            create_bad_request("Field 'Routing' must be present in the headers.\n"),
+            responses.create_bad_request_response("Field 'Routing' must be present in the headers.\n"),
             "",
         )
 
     route_info = headers.get("Routing").lower()
     if route_info not in __valid_routes:
-        return create_bad_request("Field 'Routing' must be 'image' or 'preset'.\n"), ""
+        return responses.create_bad_request_response("Field 'Routing' must be 'image' or 'preset'.\n"), ""
 
     return None, route_info

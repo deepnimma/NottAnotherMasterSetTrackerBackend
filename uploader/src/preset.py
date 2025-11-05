@@ -1,5 +1,5 @@
 from workers import Response
 
 
-async def handle(request_data) -> Response:
-    return None
+async def handle(form_data, presets_db) -> Response:
+    return Response("Temp Preset Response.")

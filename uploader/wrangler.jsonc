@@ -15,7 +15,7 @@
 			"database_name": "tcg-image-metadata-db",
 			"database_id": "db31afbd-ccb3-4d07-b244-f7ae1c3021aa"
 		},
-        {
+		{
 			"binding": "tcg_presets_sets_db",
 			"database_name": "tcg-presets-sets-db",
 			"database_id": "37e26d92-d2d9-452e-a444-236783951c0a"
@@ -24,7 +24,12 @@
 	"r2_buckets": [
 		{
 			"bucket_name": "image-bucket",
-			"binding": "image_bucket"
+			"binding": "image_bucket",
+            "preview_bucket_name": "testing-image-bucket"
+		},
+		{
+			"bucket_name": "testing-image-bucket",
+			"binding": "testing_image_bucket"
 		}
 	]
 }
