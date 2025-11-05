@@ -49,6 +49,16 @@ jobs:
           cache: "npm"
           cache-dependency-path: uploader/package-lock.json
 
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Upload secrets to Cloudflare
+        env:
+          UPLOADER_TOKEN: ${{ secrets.UPLOADER_SECRET }}
+
+        run: |
+          echo $UPLOADER_TOKEN | wrangler secret put UPLOADER_TOKEN
+
       - name: Deploy Uploader Worker
         working-directory: ./uploader
         run: |

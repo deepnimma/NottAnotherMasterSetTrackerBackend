@@ -30,7 +30,7 @@
  	"r2_buckets": [
 		{
 			"bucket_name": "image-bucket",
-			"binding": "image_bucket",
+			"binding": "image_bucket"
 		}
 	]
 
