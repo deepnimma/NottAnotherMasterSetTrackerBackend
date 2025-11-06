@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 __valid_routes = ["image", "preset"]
 
+
 async def handle_request(request: Request, env) -> Response:
     # First get form data
     form_data = await request.form_data()
@@ -25,7 +26,9 @@ async def handle_request(request: Request, env) -> Response:
 
     # Get Data
     if route == "image":
-        return await image_handler.handle(form_data, env.image_bucket, env.tcg_image_metadata_db)
+        return await image_handler.handle(
+            form_data, env.image_bucket, env.tcg_image_metadata_db
+        )
     else:
         return await preset_handler.handle(form_data, env.tcg_preset_sets_db)
 
@@ -50,16 +53,28 @@ def __check_headers(
         )
 
     if headers.get("Uploader-Token") != valid_uploader_token:
-        return responses.create_bad_request_response("Valid 'Uploader-Token' was not passed.\n"), ""
+        return (
+            responses.create_bad_request_response(
+                "Valid 'Uploader-Token' was not passed.\n"
+            ),
+            "",
+        )
 
     if "Routing" not in headers:
         return (
-            responses.create_bad_request_response("Field 'Routing' must be present in the headers.\n"),
+            responses.create_bad_request_response(
+                "Field 'Routing' must be present in the headers.\n"
+            ),
             "",
         )
 
     route_info = headers.get("Routing").lower()
     if route_info not in __valid_routes:
-        return responses.create_bad_request_response("Field 'Routing' must be 'image' or 'preset'.\n"), ""
+        return (
+            responses.create_bad_request_response(
+                "Field 'Routing' must be 'image' or 'preset'.\n"
+            ),
+            "",
+        )
 
     return None, route_info

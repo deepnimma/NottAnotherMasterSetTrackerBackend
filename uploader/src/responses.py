@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from workers import Response
 
+
 def create_ok_response(msg: str) -> Response:
     """
     Creates a response with HTTP Status Code 200.
@@ -9,6 +10,7 @@ def create_ok_response(msg: str) -> Response:
     :return: The response with HTTP Status OK
     """
     return Response(__check_msg_ender(msg), HTTPStatus.OK)
+
 
 def create_bad_request_response(msg: str) -> Response:
     """
