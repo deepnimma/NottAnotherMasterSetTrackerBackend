@@ -30,7 +30,7 @@ jobs:
       - name: Install python dependencies
         working-directory: ./${{ matrix.worker }}
         run: |
-          uv sync --system
+          uv sync
 
       - name: Upload secrets to Cloudflare (Uploader only)
         if: matrix.worker == 'uploader'
