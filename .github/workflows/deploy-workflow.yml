@@ -19,20 +19,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: "latest"
-          cache: "npm"
-          cache-dependency-path: ./${{ matrix.worker }}/package-lock.json
+          python-version: "3.12"
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install python dependencies
+        working-directory: ./${{ matrix.worker }}
+        run: |
+          uv sync --system
 
       - name: Upload secrets to Cloudflare (Uploader only)
         if: matrix.worker == 'uploader'
+        working-directory: ./${{ matrix.worker }}
         run: |
-          echo $UPLOADER_TOKEN | wrangler secret put UPLOADER_TOKEN --name uploader
+          echo $UPLOADER_TOKEN | uv run pywrangler secret put UPLOADER_TOKEN --name uploader
         env:
           UPLOADER_TOKEN: ${{ secrets.UPLOADER_SECRET }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -41,8 +45,7 @@ jobs:
       - name: Deploy Worker
         working-directory: ./${{ matrix.worker }}
         run: |
-          npm i -D wrangler@4
-          npx wrangler deploy
+          uv run pywrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -51,8 +54,8 @@ jobs:
         if: matrix.worker == 'downloader'
         working-directory: ./${{ matrix.worker }}
         run: |
-          npx wrangler d1 migrations apply tcg-image-metadata-db --remote
-          npx wrangler d1 migrations apply tcg-presets-sets-db --remote
+          uv run pywrangler d1 migrations apply tcg-image-metadata-db --remote
+          uv run pywrangler d1 migrations apply tcg-presets-sets-db --remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
