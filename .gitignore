@@ -300,3 +300,6 @@ http-client.private.env.json
 .idea/ApifoxUploaderProjectSetting.xml
 
 local_scripts/
+wrangler-local/
+local-*
+local-**

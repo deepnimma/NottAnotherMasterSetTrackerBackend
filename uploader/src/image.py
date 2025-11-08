@@ -63,32 +63,70 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
             setName, cardNumber, version, cardTitle,
             mainPokemon, hasReverseHolo, illustrator, mainEnergy,
             secondaryEnergy, releaseDate, cameoPokemon,
-            tags, image_key, item, trainerOwned, soleTrainer, trainer
+            tags, imageKey, item, trainerOwned, soleTrainer, trainer
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
     )
 
-    setName = metadata_json.get("masterSetData").get("setName")
-    cardNumber = metadata_json.get("masterSetData").get("cardNumber")
+    set_name = metadata_json.get("masterSetData").get("setName").lower()
+    card_number = metadata_json.get("masterSetData").get("cardNumber")
     version = metadata_json.get("version")
-    cardTitle = metadata_json.get("cardTitle")
-    mainPokemon = metadata_json.get("mainPokemon")
-    illustrator = metadata_json.get("illustrator")
-    mainEnergy = metadata_json.get("mainEnergy")
-    secondaryEnergy = metadata_json.get("secondaryEnergy")
+    card_title = metadata_json.get("cardTitle").lower()
+    main_pokemon = metadata_json.get("mainPokemon").lower()
+    illustrator = metadata_json.get("illustrator").lower()
+    main_energy = metadata_json.get("mainEnergy").lower()
+    secondary_energy = metadata_json.get("secondaryEnergy", "none").lower()
 
     # Trainer
-    trainer_data = metadata_json.get("trainerInfo")
-    itemBool = 0 if trainer_data.get("item", False) is False else 1
-    trainerOwned = 0 if trainer_data.get("trainerOwned", False) is False else 1
-    soleTrainer = 0 if trainer_data.get("soleTrainer", False) is False else 1
-    trainer = trainer_data.get("trainer", None)
+    trainer_data = metadata_json.get("trainerInfo", dict())
+    item_bool = 0 if trainer_data.get("item", False) is False else 1
+    trainer_owned = 0 if trainer_data.get("trainerOwned", False) is False else 1
+    sole_trainer = 0 if trainer_data.get("soleTrainer", False) is False else 1
+    trainer = trainer_data.get("trainer", "").lower()
 
+    args = [
+        set_name,
+        card_number,
+        version,
+        card_title,
+        main_pokemon,
+        has_reverse_int,  # hasReverseHolo
+        illustrator,
+        main_energy,
+        secondary_energy,
+        release_date_str,  # releaseDate
+        cameo_str,  # cameoPokemon
+        tags_str,  # tags
+        image_key,
+        item_bool,
+        trainer_owned,
+        sole_trainer,
+        trainer
+    ]
+
+    print(f"Pushing the following values: {args}")
 
     await stmt.bind(
-    )
+        set_name,
+        card_number,
+        version,
+        card_title,
+        main_pokemon,
+        has_reverse_int,  # hasReverseHolo
+        illustrator,
+        main_energy,
+        secondary_energy,
+        release_date_str,  # releaseDate
+        cameo_str,  # cameoPokemon
+        tags_str,  # tags
+        image_key,
+        item_bool,
+        trainer_owned,
+        sole_trainer,
+        trainer
+    ).run()
 
-    return responses.create_ok_response("Temp Image Response.")
+    return responses.create_ok_response(f"Image with key: {image_key} released on {release_date_str} has been pushed to the database.\n\n")
 
 def _create_image_key(image_metadata: dict) -> str:
     # Build Image Key
@@ -97,5 +135,11 @@ def _create_image_key(image_metadata: dict) -> str:
     card_title = image_metadata.get("cardTitle")
     illustrator = image_metadata.get("illustrator")
     image_key = f"{set_name}-{card_number}-{card_title}-{illustrator}"
+
+    return _image_keyify(image_key)
+
+def _image_keyify(image_key: str) -> str:
+    image_key = image_key.replace(" ", "-")
+    image_key = image_key.lower()
 
     return image_key
