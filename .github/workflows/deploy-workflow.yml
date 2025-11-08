@@ -26,25 +26,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: ./${{ matrix.worker }}/package-lock.json
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: ./${{ matrix.worker }}/.python-version
-
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-        shell: bash
-
-      - name: Cache uv
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ matrix.worker }}-${{ hashFiles(format('./{0}/uv.lock', matrix.worker)) }}
-          restore-keys: |
-            ${{ runner.os }}-uv-${{ matrix.worker }}-
-
       - name: Install Wrangler
         run: npm install -g wrangler
 
@@ -61,7 +42,6 @@ jobs:
         working-directory: ./${{ matrix.worker }}
         run: |
           npm i -D wrangler@4
-          uv pip sync uv.lock
           npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
