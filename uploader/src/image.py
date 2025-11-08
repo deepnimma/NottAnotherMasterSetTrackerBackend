@@ -50,7 +50,7 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
     )
 
     # - Convert boolean to integer
-    has_reverse_int = 1 if metadata_json['hasReverseHolo'] else 0
+    has_reverse_int = 1 if metadata_json["hasReverseHolo"] else 0
 
     # - Serialize JSON Objects to strings for TEXT columns
     cameo_str = json.dumps(metadata_json.get("cameoPokemon", list()))
@@ -101,7 +101,7 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
         item_bool,
         trainer_owned,
         sole_trainer,
-        trainer
+        trainer,
     ]
 
     print(f"Pushing the following values: {args}")
@@ -123,10 +123,13 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
         item_bool,
         trainer_owned,
         sole_trainer,
-        trainer
+        trainer,
     ).run()
 
-    return responses.create_ok_response(f"Image with key: {image_key} released on {release_date_str} has been pushed to the database.\n\n")
+    return responses.create_ok_response(
+        f"Image with key: {image_key} released on {release_date_str} has been pushed to the database.\n\n"
+    )
+
 
 def _create_image_key(image_metadata: dict) -> str:
     # Build Image Key
@@ -137,6 +140,7 @@ def _create_image_key(image_metadata: dict) -> str:
     image_key = f"{set_name}-{card_number}-{card_title}-{illustrator}"
 
     return _image_keyify(image_key)
+
 
 def _image_keyify(image_key: str) -> str:
     image_key = image_key.replace(" ", "-")
