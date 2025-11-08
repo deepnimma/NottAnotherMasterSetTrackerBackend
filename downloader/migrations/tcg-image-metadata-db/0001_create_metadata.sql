@@ -4,14 +4,7 @@ CREATE TABLE image_metadata (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     -- Flattened from 'masterSetData'
-    setName TEXT NOT NULL CHECK(setName IN (
-        -- WOTC Base Era
-        'base',
-        'fossil',
-        'jungle',
-        'base-set-2',
-        'team-rocket'
-    )),
+    setName TEXT NOT NULL,
     cardNumber INTEGER NOT NULL,
 
     version INTEGER NOT NULL CHECK(version = 1),
@@ -57,5 +50,5 @@ CREATE TABLE image_metadata (
     trainerInfo TEXT,
     tags TEXT,
 
-    UNIQUE (setName, cardNumber)
+    UNIQUE(setName, cardNumber)
 );

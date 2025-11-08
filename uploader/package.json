@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"deploy": "uv run pywrangler deploy",
-		"dev": "uv run pywrangler dev",
+		"dev": "uv run pywrangler dev --persist-to=../.wrangler-local",
 		"start": "uv run pywrangler dev"
 	},
 	"devDependencies": {

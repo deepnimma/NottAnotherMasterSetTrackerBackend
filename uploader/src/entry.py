@@ -1,5 +1,8 @@
-from workers import Response, WorkerEntrypoint
-from submodule import get_hello_message
+from workers import Response, WorkerEntrypoint, Request
+from router import handle_request
+
+
 class Default(WorkerEntrypoint):
-    async def fetch(self, request):
-        return Response(get_hello_message())
+    async def fetch(self, request: Request):
+        print("Received request.")
+        return await handle_request(request, self.env)

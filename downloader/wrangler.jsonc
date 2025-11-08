@@ -27,10 +27,11 @@
             "migrations_dir": "migrations/tcg-presets-sets-db"
 		}
 	],
-	"r2_buckets": [
+ 	"r2_buckets": [
 		{
 			"bucket_name": "image-bucket",
 			"binding": "image_bucket"
 		}
 	]
+
 }

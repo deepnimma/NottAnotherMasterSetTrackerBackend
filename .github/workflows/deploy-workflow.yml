@@ -5,54 +5,56 @@ on:
     types: [published]
 
 jobs:
-  deploy-downloader:
+  deploy-worker:
     runs-on: ubuntu-latest
-    name: Deploy downloader to production
+    name: Deploy ${{ matrix.worker }} to production
     environment: prod
+
+    strategy:
+      matrix:
+        worker: [downloader, uploader]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: "latest"
-          cache: "npm"
-          cache-dependency-path: downloader/package-lock.json
+          python-version: "3.12"
 
-      - name: Deploy Downloader Worker
-        working-directory: ./downloader
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install python dependencies
+        working-directory: ./${{ matrix.worker }}
         run: |
-          npm i -D wrangler@4
-          npx wrangler deploy
-          npx wrangler d1 migrations apply tcg-image-metadata-db --remote
-          npx wrangler d1 migrations apply tcg-presets-sets-db --remote
+          uv sync
+
+      - name: Upload secrets to Cloudflare (Uploader only)
+        if: matrix.worker == 'uploader'
+        working-directory: ./${{ matrix.worker }}
+        run: |
+          echo $UPLOADER_TOKEN | uv run pywrangler secret put UPLOADER_TOKEN --name uploader
+        env:
+          UPLOADER_TOKEN: ${{ secrets.UPLOADER_SECRET }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy Worker
+        working-directory: ./${{ matrix.worker }}
+        run: |
+          uv run pywrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-  deploy-uploader:
-    runs-on: ubuntu-latest
-    name: Deploy uploader to production
-    environment: prod
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "latest"
-          cache: "npm"
-          cache-dependency-path: uploader/package-lock.json
-
-      - name: Deploy Uploader Worker
-        working-directory: ./uploader
+      - name: Apply D1 Migrations (Downloader only)
+        if: matrix.worker == 'downloader'
+        working-directory: ./${{ matrix.worker }}
         run: |
-          npm i -D wrangler@4
-          npx wrangler deploy
+          uv run pywrangler d1 migrations apply tcg-image-metadata-db --remote
+          uv run pywrangler d1 migrations apply tcg-presets-sets-db --remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
