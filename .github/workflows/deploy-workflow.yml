@@ -61,6 +61,7 @@ jobs:
         working-directory: ./${{ matrix.worker }}
         run: |
           npm i -D wrangler@4
+          uv pip sync uv.lock
           npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
