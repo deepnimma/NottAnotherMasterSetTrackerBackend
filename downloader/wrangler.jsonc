@@ -17,7 +17,7 @@
 		{
 			"binding": "tcg_image_metadata_db",
 			"database_name": "tcg-image-metadata-db",
-			"database_id": "db31afbd-ccb3-4d07-b244-f7ae1c3021aa",
+			"database_id": "79b8068b-2be9-4a4a-baab-46c0dcf9c517",
             "migrations_dir": "migrations/tcg-image-metadata-db"
 		},
 		{
