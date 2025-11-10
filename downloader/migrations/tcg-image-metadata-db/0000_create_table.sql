@@ -1,17 +1,22 @@
--- Migration number: 0001 	 2025-11-03T21:29:42.203Z
+-- Migration number: 0000
 CREATE TABLE image_metadata (
-    -- Synthetic primary key. Doesn't really matter much to us.
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    -- Flattened from 'masterSetData'
     setName TEXT NOT NULL,
-    cardNumber INTEGER NOT NULL,
-
-    version INTEGER NOT NULL CHECK(version = 1),
+    cardNumber TEXT NOT NULL,
+    version INTEGER NOT NULL,
     cardTitle TEXT NOT NULL,
     mainPokemon TEXT NOT NULL,
     hasReverseHolo INTEGER NOT NULL CHECK(hasReverseHolo IN (0, 1)),
     illustrator TEXT NOT NULL,
+    releaseDate TEXT NOT NULL CHECK(date(releaseDate) NOT NULL),
+    cameoPokemon TEXT,
+    tags TEXT,
+    imageKey TEXT,
+
+    item INTEGER CHECK(item IN (0, 1)),
+    trainerOwned INTEGER CHECK(trainerOwned IN (0, 1)),
+    soleTrainer INTEGER CHECK(soleTrainer IN (0, 1)),
+    trainer TEXT,
 
     mainEnergy TEXT NOT NULL CHECK(
         mainEnergy IN (
@@ -25,10 +30,15 @@ CREATE TABLE image_metadata (
             'metal',
             'dragon',
             'normal',
-            'trainer'
+            'trainer',
+            'fairy',
+            'colorless',
+            'none'
         )
     ),
-    secondaryEnergy TEXT CHECK(
+
+    -- From 0001, modified by 0006 to be NOT NULL and include new types
+    secondaryEnergy TEXT NOT NULL CHECK(
         secondaryEnergy IN (
             'grass',
             'fire',
@@ -40,15 +50,14 @@ CREATE TABLE image_metadata (
             'metal',
             'dragon',
             'normal',
-            'trainer'
+            'trainer',
+            'fairy',
+            'colorless',
+            'none'
         )
     ),
 
-    releaseDate TEXT NOT NULL CHECK(date(releaseDate) NOT NULL),
-
-    cameoPokemon TEXT,
-    trainerInfo TEXT,
-    tags TEXT,
-
     UNIQUE(setName, cardNumber)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_image_metadata_imageKey ON image_metadata(imageKey);
