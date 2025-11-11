@@ -108,6 +108,9 @@ _schema = {
                 "dragon",
                 "normal",
                 "trainer",
+                "fairy",
+                "colorless",
+                "none"
             ],
         },
         "secondaryEnergy": {
@@ -125,6 +128,9 @@ _schema = {
                 "dragon",
                 "normal",
                 "trainer",
+                "fairy",
+                "colorless",
+                "none"
             ],
         },
         "illustrator": {
@@ -138,7 +144,7 @@ _schema = {
                 "setName": {
                     "description": "The name of the set this card belongs to.",
                     "type": "string",
-                    "enum": ["Base", "Fossil", "Jungle", "Base Set 2", "Team Rocket"],
+                    "enum": ["base", "fossil", "jungle", "base-set-2", "team-rocket", "wizards-black-star-promos"],
                 },
                 "cardNumber": {
                     "description": "The number of the card in the set",
