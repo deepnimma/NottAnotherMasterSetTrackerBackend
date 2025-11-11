@@ -148,7 +148,7 @@ _schema = {
                 },
                 "cardNumber": {
                     "description": "The number of the card in the set",
-                    "type": "number",
+                    "type": "string",
                 },
             },
         },
