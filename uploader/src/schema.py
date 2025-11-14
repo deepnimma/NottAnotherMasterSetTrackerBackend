@@ -50,6 +50,18 @@ _schema = {
             "items": {"type": "string"},
             "minItems": 1,
         },
+        "additionalInfo": {
+            "description": "Additional info to be present in the DB.",
+            "type": "string",
+        },
+        "flavorText": {
+            "description": "Any flavor text to be displayed with the image.",
+            "type": "string",
+        },
+        "infoButton": {
+            "description": "Use this if any information should be displayed as a info button that needs to be hovered over. For information that might be useful to some collectors but not all of them.",
+            "type": "string",
+        },
         "trainerInfo": {
             "type": "object",
             "properties": {
