@@ -19,10 +19,9 @@ def validate_image_metadata(metadata: dict) -> Response | None:
         return None
     except ValidationError as err:
         print(f"Error: {err.message}")
-        return responses.create_ok_response(
-            f"Metadata failed against the schema. Error Message: {err.message}"
+        return responses.create_bad_request_response(
+            f"Metadata failed against the schema. Error message: {err.message}"
         )
-
 
 _schema = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
