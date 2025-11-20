@@ -223,15 +223,6 @@ _schema = {
             "type": "array",
             "items": {
                 "type": "string",
-                "enum": [
-                    "unnotable",
-                    "1st-edition",
-                    "holofoil",
-                    "energy",
-                    "dark",
-                    "containsCameo",
-                ],
-                "minItems": 1,
             },
         },
     },
