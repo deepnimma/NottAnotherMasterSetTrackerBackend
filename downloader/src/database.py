@@ -1,9 +1,16 @@
 from http import HTTPStatus
 import re
+import json
 
 from workers import Request, Response
 from urllib.parse import urlparse, parse_qs
 
+# Example flag
+"""
+curl -X GET "http://localhost:8787?q=pikachu&cameo=1"
+curl -X GET "http://localhost:8787?q=ken-sugimori&illustrator=1&descending=1"
+curl -X GET "http://localhost:8787?q=jessie&trainer=1&descending=1&cameo=1"
+"""
 async def handle_request(request: Request, db) -> Response:
     url_string = request.url
     parsed_url = urlparse(url_string)
@@ -39,20 +46,28 @@ async def handle_request(request: Request, db) -> Response:
 
     # Run stmt
     response = await stmt.bind(*params).all()
-    print(f"Results: {response.results}")
+
+    # Get all image keys
+    image_keys = []
+    for row in response.results.to_py():
+        image_keys.append(row.get("imageKey"))
+
+    print(image_keys)
 
     # -- Response --
-    response_lines = []
-    response_lines.append(f"Found {len(pokemon_names)} Pokemon names.")
-    response_lines.append(f"Parsed Pokemon Names: " + ", ".join(pokemon_names))
-    response_lines.append(f"Cameo: {cameo_flag}")
-    response_lines.append(f"Trainer: {trainer_flag}")
-    response_lines.append(f"DB Query: {db_query}")
-    response_lines.append(f"Params: {params}")
+    response_dict = {
+        "requested_pokemon_num": len(pokemon_names),
+        "requested_pokemon": pokemon_names,
+        "parsed_pkmn_names": ", ".join(pokemon_names),
+        "cameo_flag": cameo_flag,
+        "trainer_flag": trainer_flag,
+        "illustrator_flag": illustrator_flag,
+        "descending_flag": descending,
+        "num_found": len(image_keys),
+        "image_keys": image_keys,
+    }
 
-    response_text = "\n".join(response_lines) + "\n"
-
-    return Response(response_text, HTTPStatus.OK)
+    return Response(json.dumps(response_dict), HTTPStatus.OK, headers={"Content-Type": "application/json"})
 
 def sanitize_sql_input(input_str: str) -> str | None:
     if input_str is None:
