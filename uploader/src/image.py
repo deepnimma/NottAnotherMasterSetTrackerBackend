@@ -107,23 +107,7 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
     print(f"Pushing the following values: {args}")
 
     await stmt.bind(
-        set_name,
-        card_number,
-        version,
-        card_title,
-        main_pokemon,
-        has_reverse_int,  # hasReverseHolo
-        illustrator,
-        main_energy,
-        secondary_energy,
-        release_date_str,  # releaseDate
-        cameo_str,  # cameoPokemon
-        tags_str,  # tags
-        image_key,
-        item_bool,
-        trainer_owned,
-        sole_trainer,
-        trainer,
+        *args,
     ).run()
 
     return responses.create_ok_response(
