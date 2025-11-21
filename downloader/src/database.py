@@ -42,6 +42,7 @@ async def handle_request(request: Request, db) -> Response:
     db_query, params = build_image_db_query(pokemon_names, illustrator_flag, cameo_flag, trainer_flag, descending)
 
     # Create stmt
+    print(f"Making query: {db_query} with params: {params}")
     stmt = db.prepare(db_query)
 
     # Run stmt
