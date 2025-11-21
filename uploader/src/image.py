@@ -51,6 +51,7 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
 
     # - Convert boolean to integer
     has_reverse_int = 1 if metadata_json["hasReverseHolo"] else 0
+    is_reverse_int = 1 if metadata_json.get("isReverseHolo", False) else 0
 
     # - Serialize JSON Objects to strings for TEXT columns
     cameo_str = json.dumps(metadata_json.get("cameoPokemon", list()))
@@ -63,10 +64,16 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
             setName, cardNumber, version, cardTitle,
             mainPokemon, hasReverseHolo, illustrator, mainEnergy,
             secondaryEnergy, releaseDate, cameoPokemon,
-            tags, imageKey, item, trainerOwned, soleTrainer, trainer
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            tags, imageKey, item, trainerOwned, soleTrainer, trainer,
+            additionalInfo, flavorText, infoButton, isReverseHolo
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
     )
+
+    # Description columns
+    additional_info = metadata_json.get("additionalInfo", "")
+    flavor_text = metadata_json.get("flavorText", "")
+    info_button = metadata_json.get("infoButton", "")
 
     set_name = metadata_json.get("masterSetData").get("setName").lower()
     card_number = metadata_json.get("masterSetData").get("cardNumber")
@@ -102,6 +109,10 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
         trainer_owned,
         sole_trainer,
         trainer,
+        additional_info,
+        flavor_text,
+        info_button,
+        is_reverse_int,
     ]
 
     print(f"Pushing the following values: {args}")

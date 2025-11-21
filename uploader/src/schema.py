@@ -104,6 +104,10 @@ _schema = {
             "description": "Whether this particular card has a reverse holo variant.",
             "type": "boolean",
         },
+        "isReverseHolo": {
+            "description": "Whether this particular card is a reverse holo variant.",
+            "type": "boolean",
+        },
         "mainEnergy": {
             "description": "The main/first energy type of this particular pokemon card. This field is required.",
             "type": "string",
