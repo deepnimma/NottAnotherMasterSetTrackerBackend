@@ -4,13 +4,10 @@ import re
 from workers import Request, Response
 from urllib.parse import urlparse, parse_qs
 
-async def handle_request(request: Request, env) -> Response:
+async def handle_request(request: Request, db) -> Response:
     url_string = request.url
     parsed_url = urlparse(url_string)
     og_query_params = parse_qs(parsed_url.query)
-
-    cameo_flag = False
-    trainer_flag = False
 
     # Ensure lowercase
     query_params = {}
@@ -28,10 +25,21 @@ async def handle_request(request: Request, env) -> Response:
     secured_search_query_string = sanitize_sql_input(raw_search_query)
     pokemon_names = get_pokemon_names(secured_search_query_string)
 
-    if "cameo" in query_params:
-        cameo_flag = True
-    if "trainer" in query_params:
-        trainer_flag = True
+    # DB Query Flags
+    cameo_flag = True if "cameo" in query_params else False
+    trainer_flag = True if "trainer" in query_params else False
+    illustrator_flag = True if "illustrator" in query_params else False
+    descending = True if "descending" in query_params else False
+
+    # Create db query
+    db_query, params = build_image_db_query(pokemon_names, illustrator_flag, cameo_flag, trainer_flag, descending)
+
+    # Create stmt
+    stmt = db.prepare(db_query)
+
+    # Run stmt
+    response = await stmt.bind(*params).all()
+    print(f"Results: {response.results}")
 
     # -- Response --
     response_lines = []
@@ -39,7 +47,8 @@ async def handle_request(request: Request, env) -> Response:
     response_lines.append(f"Parsed Pokemon Names: " + ", ".join(pokemon_names))
     response_lines.append(f"Cameo: {cameo_flag}")
     response_lines.append(f"Trainer: {trainer_flag}")
-    response_lines.append(build_image_db_query(pokemon_names, cameo_flag, trainer_flag))
+    response_lines.append(f"DB Query: {db_query}")
+    response_lines.append(f"Params: {params}")
 
     response_text = "\n".join(response_lines) + "\n"
 
@@ -71,18 +80,40 @@ def get_pokemon_names(secured_query_string: str) -> list[str]:
 
     return pokemon_names
 
-def build_image_db_query(pokemon_names: list[str], cameo: bool, trainer: bool) -> str:
+def build_image_db_query(pokemon_names: list[str], illustrator: bool = False, cameo: bool = False, trainer: bool = False, descending: bool = False) -> tuple[str, list[str]]:
     base_query = "SELECT * FROM image_metadata WHERE"
-    ordering_string = "ORDER BY releaseDate ASC, cardNumber ASC;"
+
+    # Set order
+    if descending:
+        ordering_string = "ORDER BY releaseDate DESC, cardNumber DESC;"
+    else:
+        ordering_string = "ORDER BY releaseDate ASC, cardNumber ASC;"
+
     query_strs = [base_query]
+    params = []
+
+    if illustrator:
+        column_name = 'illustrator'
+    elif trainer:
+        column_name = 'trainer'
+    else:
+        column_name = 'mainPokemon'
 
     for i, name in enumerate(pokemon_names):
         new_str = "OR " if i > 0 else ""
-        new_str += f"mainPokemon LIKE '{name}' OR illustrator LIKE '{name}'"
+        new_str += f"{column_name} LIKE ?"
+        params.append(f"{name}")
         query_strs.append(new_str)
 
+    if cameo and not illustrator:
+        for i, name in enumerate(pokemon_names):
+            new_str = f"OR cameoPokemon LIKE ?"
+            params.append(f"%{name}%")
+            query_strs.append(new_str)
+
+    # Add ordering string
     query_strs.append(ordering_string)
 
     joined_query = " ".join(query_strs)
 
-    return joined_query
+    return joined_query, params
