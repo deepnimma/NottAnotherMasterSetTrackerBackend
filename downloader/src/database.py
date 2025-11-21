@@ -11,6 +11,8 @@ curl -X GET "http://localhost:8787?q=pikachu&cameo=1"
 curl -X GET "http://localhost:8787?q=ken-sugimori&illustrator=1&descending=1"
 curl -X GET "http://localhost:8787?q=jessie&trainer=1&descending=1&cameo=1"
 """
+
+
 async def handle_request(request: Request, db) -> Response:
     url_string = request.url
     parsed_url = urlparse(url_string)
@@ -24,10 +26,13 @@ async def handle_request(request: Request, db) -> Response:
         query_params[lower_key] = lower_values
 
     # Sanitize Search Query
-    raw_search_query = query_params.get('q', [None])[0]
+    raw_search_query = query_params.get("q", [None])[0]
 
     if raw_search_query is None:
-        return Response("No query parameters. Must contain 'q' with at least one pokemon.\n", HTTPStatus.BAD_REQUEST)
+        return Response(
+            "No query parameters. Must contain 'q' with at least one pokemon.\n",
+            HTTPStatus.BAD_REQUEST,
+        )
 
     secured_search_query_string = sanitize_sql_input(raw_search_query)
     pokemon_names = get_pokemon_names(secured_search_query_string)
@@ -39,7 +44,9 @@ async def handle_request(request: Request, db) -> Response:
     descending = True if "descending" in query_params else False
 
     # Create db query
-    db_query, params = build_image_db_query(pokemon_names, illustrator_flag, cameo_flag, trainer_flag, descending)
+    db_query, params = build_image_db_query(
+        pokemon_names, illustrator_flag, cameo_flag, trainer_flag, descending
+    )
 
     # Create stmt
     print(f"Making query: {db_query} with params: {params}")
@@ -68,17 +75,23 @@ async def handle_request(request: Request, db) -> Response:
         "image_keys": image_keys,
     }
 
-    return Response(json.dumps(response_dict), HTTPStatus.OK, headers={"Content-Type": "application/json"})
+    return Response(
+        json.dumps(response_dict),
+        HTTPStatus.OK,
+        headers={"Content-Type": "application/json"},
+    )
+
 
 def sanitize_sql_input(input_str: str) -> str | None:
     if input_str is None:
         return None
 
     sanitized = input_str.strip()
-    sanitized = sanitized.replace("'", "").replace('"', '').replace(';', "")
-    sanitized = re.sub(r'[^\w\s\-,]', '', sanitized)
+    sanitized = sanitized.replace("'", "").replace('"', "").replace(";", "")
+    sanitized = re.sub(r"[^\w\s\-,]", "", sanitized)
 
     return sanitized
+
 
 def get_pokemon_names(secured_query_string: str) -> list[str]:
     pokemon_names = []
@@ -96,7 +109,14 @@ def get_pokemon_names(secured_query_string: str) -> list[str]:
 
     return pokemon_names
 
-def build_image_db_query(pokemon_names: list[str], illustrator: bool = False, cameo: bool = False, trainer: bool = False, descending: bool = False) -> tuple[str, list[str]]:
+
+def build_image_db_query(
+    pokemon_names: list[str],
+    illustrator: bool = False,
+    cameo: bool = False,
+    trainer: bool = False,
+    descending: bool = False,
+) -> tuple[str, list[str]]:
     base_query = "SELECT * FROM image_metadata WHERE"
 
     # Set order
@@ -109,11 +129,11 @@ def build_image_db_query(pokemon_names: list[str], illustrator: bool = False, ca
     params = []
 
     if illustrator:
-        column_name = 'illustrator'
+        column_name = "illustrator"
     elif trainer:
-        column_name = 'trainer'
+        column_name = "trainer"
     else:
-        column_name = 'mainPokemon'
+        column_name = "mainPokemon"
 
     for i, name in enumerate(pokemon_names):
         new_str = "OR " if i > 0 else ""
