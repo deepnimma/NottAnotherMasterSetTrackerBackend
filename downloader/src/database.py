@@ -71,6 +71,7 @@ async def handle_request(request: Request, db) -> Response:
         "illustrator_flag": illustrator_flag,
         "descending_flag": descending,
         "num_found": len(image_keys),
+        "image_keys": image_keys,
         "image_rows": rows,
     }
 
