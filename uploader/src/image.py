@@ -27,19 +27,6 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
     if res is not None:
         return res
 
-    # Add image key to metadata
-    image_key = _create_image_key(metadata_json)
-    metadata_json["imageKey"] = image_key
-
-    # Get image ready for upload
-    image_bytes = await image_data.bytes()
-    image_js_buffer = pyodide.ffi.to_js(image_bytes)
-
-    # Put image in bucket
-    await r2_bucket.put(
-        image_key, image_js_buffer, http_metadata={"contentType": "image/png"}
-    )
-
     # Transform Data for SQL
     # - Format release date (YYYY-MM-DD)
     release_obj = metadata_json.get("release")
@@ -91,6 +78,24 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
     sole_trainer = 0 if trainer_data.get("soleTrainer", False) is False else 1
     trainer = trainer_data.get("trainer", "").lower()
 
+    # Add image key to metadata
+    image_key = _create_image_key(
+        metadata_json,
+        True if is_reverse_int == 1 else False,
+        True if "1st-edition" in tags_str else False,
+    )
+    metadata_json["imageKey"] = image_key
+
+    # Get image ready for upload
+    image_bytes = await image_data.bytes()
+    image_js_buffer = pyodide.ffi.to_js(image_bytes)
+
+    # Put image in bucket
+    await r2_bucket.put(
+        image_key, image_js_buffer, http_metadata={"contentType": "image/png"}
+    )
+
+
     args = [
         set_name,
         card_number,
@@ -121,18 +126,24 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
         *args,
     ).run()
 
+
     return responses.create_ok_response(
         f"Image with key: {image_key} released on {release_date_str} has been pushed to the database.\n\n"
     )
 
 
-def _create_image_key(image_metadata: dict) -> str:
+def _create_image_key(image_metadata: dict, is_reverse: bool, is_fe: bool) -> str:
     # Build Image Key
     set_name = image_metadata.get("masterSetData").get("setName")
     card_number = image_metadata.get("masterSetData").get("cardNumber")
     card_title = image_metadata.get("cardTitle")
     illustrator = image_metadata.get("illustrator")
     image_key = f"{set_name}-{card_number}-{card_title}-{illustrator}"
+
+    if is_reverse:
+        image_key += "-rh"
+    if is_fe:
+        image_key += "-fe"
 
     return _image_keyify(image_key)
 
