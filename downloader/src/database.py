@@ -75,10 +75,17 @@ async def handle_request(request: Request, db) -> Response:
         "image_rows": rows,
     }
 
+    response_headers = {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+        "Access-Control-Allow-Headers": "Content-Type",
+    }
+
     return Response(
         json.dumps(response_dict),
         HTTPStatus.OK,
-        headers={"Content-Type": "application/json"},
+        headers=response_headers,
     )
 
 
