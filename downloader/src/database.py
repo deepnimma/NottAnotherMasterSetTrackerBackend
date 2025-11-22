@@ -57,10 +57,9 @@ async def handle_request(request: Request, db) -> Response:
 
     # Get all image keys
     image_keys = []
+    rows = response.results.to_py()
     for row in response.results.to_py():
         image_keys.append(row.get("imageKey"))
-
-    print(image_keys)
 
     # -- Response --
     response_dict = {
@@ -73,6 +72,7 @@ async def handle_request(request: Request, db) -> Response:
         "descending_flag": descending,
         "num_found": len(image_keys),
         "image_keys": image_keys,
+        "image_rows": rows,
     }
 
     return Response(
