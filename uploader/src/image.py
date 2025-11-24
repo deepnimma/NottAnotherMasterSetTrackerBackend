@@ -142,8 +142,8 @@ def _create_image_key(image_metadata: dict, is_reverse: bool, is_fe: bool) -> st
 
     if is_reverse:
         image_key += "-rh"
-    if is_fe:
-        image_key += "-fe"
+    if not is_fe:
+        image_key += "-nfe"
 
     return _image_keyify(image_key)
 
