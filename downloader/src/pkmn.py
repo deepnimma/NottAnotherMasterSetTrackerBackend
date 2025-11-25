@@ -32,7 +32,12 @@ async def handle_pkmn_request(
 
     # Create en_db query
     db_query, db_params = build_image_db_query(
-        table_name, pokemon_names, illustrator_flag, cameo_flag, trainer_flag, descending
+        table_name,
+        pokemon_names,
+        illustrator_flag,
+        cameo_flag,
+        trainer_flag,
+        descending,
     )
 
     # Create stmt
@@ -52,7 +57,6 @@ async def handle_pkmn_request(
         illustrator_flag,
         descending,
     )
-
 
 
 def build_image_db_query(

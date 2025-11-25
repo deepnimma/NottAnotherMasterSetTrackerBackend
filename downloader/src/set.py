@@ -2,11 +2,8 @@ import responses
 from util import Languages
 import util
 
-async def search_set(
-        db,
-        search_query: str,
-        lang: Languages
-) -> dict:
+
+async def search_set(db, search_query: str, lang: Languages) -> dict:
     # Set table name based on language
     table_name = "image_metadata"
     if lang == Languages.EN:
@@ -34,10 +31,8 @@ async def search_set(
         True,
     )
 
-def build_set_query(
-        table_name: str,
-        sets: list[str]
-) -> tuple[str, list[str]]:
+
+def build_set_query(table_name: str, sets: list[str]) -> tuple[str, list[str]]:
     base_query = f"SELECT * FROM {table_name} WHERE"
 
     new_sets = [sanitize_set_name(set) for set in sets]
@@ -56,6 +51,7 @@ def build_set_query(
     joined_query = " ".join(query_strs)
 
     return joined_query, params
+
 
 def sanitize_set_name(set_name: str) -> str:
     set_name = set_name.lower()

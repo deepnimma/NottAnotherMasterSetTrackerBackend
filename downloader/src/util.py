@@ -1,8 +1,10 @@
 from enum import Enum
 
+
 class Languages(Enum):
     EN = ("English",)
     JP = "Japanese"
+
 
 def get_pokemon_names(secured_query_string: str) -> list[str]:
     pokemon_names = []
