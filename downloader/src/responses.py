@@ -1,14 +1,14 @@
 def build_response_dict(
     pokemon_names: list[str],
     rows: list[dict],
-    cameo_flag: bool,
-    trainer_flag: bool,
-    illustrator_flag: bool,
-    descending_flag: bool,
-    pokemon_rows: list[dict],
+    cameo_flag: bool = False,
+    trainer_flag: bool = False,
+    illustrator_flag: bool = False,
+    descending_flag: bool = False,
+    set_flag: bool = False,
 ) -> dict:
     image_keys = []
-    for row in pokemon_rows:
+    for row in rows:
         image_keys.append(row.get("imageKey"))
 
     return {
@@ -19,6 +19,7 @@ def build_response_dict(
         "trainer_flag": trainer_flag,
         "illustrator_flag": illustrator_flag,
         "descending_flag": descending_flag,
+        "set_flag": set_flag,
         "num_found": len(image_keys),
         "image_keys": image_keys,
         "image_rows": rows,

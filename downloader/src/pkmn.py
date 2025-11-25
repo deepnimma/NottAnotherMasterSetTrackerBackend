@@ -1,29 +1,28 @@
-from enum import Enum
-
-from workers import Request, Response
 import responses
+from util import Languages
+import util
 
 
-class Languages(Enum):
-    EN = ("English",)
-    JP = "Japanese"
-
-
-async def handle_en_pkmn_request(
+async def handle_pkmn_request(
     en_db,
     search_query: str,
     params: dict,
+    lang: Languages,
 ) -> dict:
     """
     Handles a Pokemon request, for now it only handles English requests and is made with
     expansion to other languages in mind.
+    :param lang: The language determines which table to make the request in.
     :param en_db: The ENGLISH DB to make the query to.
     :param search_query: The search query inputted by the user.
     :param params: The query params
     :return:
     """
+    table_name = "image_metadata"
+    if lang == Languages.EN:
+        table_name = "image_metadata"
 
-    pokemon_names = get_pokemon_names(search_query)
+    pokemon_names = util.get_pokemon_names(search_query)
 
     # DB Query Flags
     cameo_flag = True if "cameo" in params else False
@@ -32,8 +31,13 @@ async def handle_en_pkmn_request(
     descending = True if "descending" in params else False
 
     # Create en_db query
-    db_query, db_params = build_en_image_db_query(
-        pokemon_names, illustrator_flag, cameo_flag, trainer_flag, descending
+    db_query, db_params = build_image_db_query(
+        table_name,
+        pokemon_names,
+        illustrator_flag,
+        cameo_flag,
+        trainer_flag,
+        descending,
     )
 
     # Create stmt
@@ -52,35 +56,18 @@ async def handle_en_pkmn_request(
         trainer_flag,
         illustrator_flag,
         descending,
-        rows,
     )
 
 
-def get_pokemon_names(secured_query_string: str) -> list[str]:
-    pokemon_names = []
-    if secured_query_string:
-        new_name = secured_query_string.split(",")
-
-        for name in new_name:
-            stripped_name = name.strip()
-            if stripped_name not in pokemon_names:
-                pokemon_names.append(stripped_name)
-
-            joined_name = " ".join(stripped_name.split("-"))
-            if joined_name not in pokemon_names:
-                pokemon_names.append(joined_name)
-
-    return pokemon_names
-
-
-def build_en_image_db_query(
+def build_image_db_query(
+    table_name: str,
     pokemon_names: list[str],
     illustrator: bool = False,
     cameo: bool = False,
     trainer: bool = False,
     descending: bool = False,
 ) -> tuple[str, list[str]]:
-    base_query = "SELECT * FROM image_metadata WHERE"
+    base_query = f"SELECT * FROM {table_name} WHERE"
 
     # Set order
     if descending:
