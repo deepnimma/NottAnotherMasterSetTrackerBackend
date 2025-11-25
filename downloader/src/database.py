@@ -5,7 +5,9 @@ import json
 from workers import Request, Response
 from urllib.parse import urlparse, parse_qs
 
-from pkmn import handle_en_pkmn_request
+import pkmn
+import set
+from util import Languages
 
 # Example flag
 """
@@ -39,12 +41,17 @@ async def handle_request(request: Request, env) -> Response:
     secured_search_query_string = sanitize_sql_input(raw_search_query)
 
     if "set" in query_params:
-        return Response("Not implemented.", HTTPStatus.NOT_IMPLEMENTED)
+        english_response = await set.search_set(
+            env.tcg_image_metadata_db,
+            secured_search_query_string,
+            Languages.EN,
+        )
     else:
-        english_response = await handle_en_pkmn_request(
+        english_response = await pkmn.handle_pkmn_request(
             env.tcg_image_metadata_db,
             secured_search_query_string,
             query_params,
+            Languages.EN,
         )
 
     response_headers = {
