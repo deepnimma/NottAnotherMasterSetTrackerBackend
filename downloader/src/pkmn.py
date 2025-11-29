@@ -88,7 +88,7 @@ def build_image_db_query(
     for i, name in enumerate(pokemon_names):
         new_str = "OR " if i > 0 else ""
         new_str += f"{column_name} LIKE ?"
-        params.append(f"{name}")
+        params.append(f"%{name}%")
         query_strs.append(new_str)
 
     if cameo and not illustrator:
