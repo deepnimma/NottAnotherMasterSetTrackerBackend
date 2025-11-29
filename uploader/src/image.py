@@ -152,6 +152,6 @@ def _image_keyify(image_key: str) -> str:
     image_key = image_key.lower()
 
     # regex
-    image_key = re.sub(r"[^a-z0-9-", "", image_key)
+    image_key = re.sub(r"[^a-z0-9-]", "", image_key)
 
     return image_key
