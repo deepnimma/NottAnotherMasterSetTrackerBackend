@@ -6,6 +6,7 @@ import schema
 
 import responses
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,6 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
         image_key, image_js_buffer, http_metadata={"contentType": "image/png"}
     )
 
-
     args = [
         set_name,
         card_number,
@@ -126,7 +126,6 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
         *args,
     ).run()
 
-
     return responses.create_ok_response(
         f"Image with key: {image_key} released on {release_date_str} has been pushed to the database.\n\n"
     )
@@ -151,5 +150,8 @@ def _create_image_key(image_metadata: dict, is_reverse: bool, is_fe: bool) -> st
 def _image_keyify(image_key: str) -> str:
     image_key = image_key.replace(" ", "-")
     image_key = image_key.lower()
+
+    # regex
+    image_key = re.sub(r"[^a-z0-9-", "", image_key)
 
     return image_key
