@@ -82,7 +82,7 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
     # Add image key to metadata
     image_key = _create_image_key(
         metadata_json,
-        True if is_reverse_int == 1 else False,
+        metadata_json.get("isReverseHolo", False),
         True if "1st-edition" in tags_str else False,
     )
     metadata_json["imageKey"] = image_key
@@ -90,11 +90,6 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
     # Get image ready for upload
     image_bytes = await image_data.bytes()
     image_js_buffer = pyodide.ffi.to_js(image_bytes)
-
-    # Put image in bucket
-    await r2_bucket.put(
-        image_key, image_js_buffer, http_metadata={"contentType": "image/png"}
-    )
 
     args = [
         set_name,
@@ -120,11 +115,22 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
         is_reverse_int,
     ]
 
-    print(f"Pushing the following values: {args}")
+    logger.debug(f"Pushing the following values: {args}")
 
-    await stmt.bind(
-        *args,
-    ).run()
+    # Insert to D1 first so R2 failure can be rolled back
+    await stmt.bind(*args).run()
+
+    try:
+        await r2_bucket.put(
+            image_key, image_js_buffer, http_metadata={"contentType": "image/png"}
+        )
+    except Exception as e:
+        logger.error(f"R2 upload failed for key '{image_key}': {e}. Rolling back D1 record.")
+        delete_stmt = metadata_db.prepare("DELETE FROM image_metadata WHERE imageKey = ?")
+        await delete_stmt.bind(image_key).run()
+        return responses.create_internal_server_error_response(
+            f"Failed to upload image to storage. DB record rolled back.\n"
+        )
 
     return responses.create_ok_response(
         f"Image with key: {image_key} released on {release_date_str} has been pushed to the database.\n\n"

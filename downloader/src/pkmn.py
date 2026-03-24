@@ -18,9 +18,7 @@ async def handle_pkmn_request(
     :param params: The query params
     :return:
     """
-    table_name = "image_metadata"
-    if lang == Languages.EN:
-        table_name = "image_metadata"
+    table_name = lang.value
 
     pokemon_names = util.get_pokemon_names(search_query)
 

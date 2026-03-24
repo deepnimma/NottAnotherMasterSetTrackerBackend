@@ -2,8 +2,9 @@ from enum import Enum
 
 
 class Languages(Enum):
-    EN = ("English",)
-    JP = "Japanese"
+    EN = "image_metadata"
+    JP = "image_metadata_jp"
+    CN = "image_metadata_cn"
 
 
 def get_pokemon_names(secured_query_string: str) -> list[str]:

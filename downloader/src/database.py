@@ -40,18 +40,28 @@ async def handle_request(request: Request, env) -> Response:
 
     secured_search_query_string = sanitize_sql_input(raw_search_query)
 
+    # Resolve language
+    raw_lang = query_params.get("lang", ["en"])[0]
+    try:
+        lang = Languages[raw_lang.upper()]
+    except KeyError:
+        return Response(
+            f"Unknown language '{raw_lang}'. Supported: {[m.name.lower() for m in Languages]}\n",
+            HTTPStatus.BAD_REQUEST,
+        )
+
     if "set" in query_params:
         english_response = await set.search_set(
             env.tcg_image_metadata_db,
             secured_search_query_string,
-            Languages.EN,
+            lang,
         )
     else:
         english_response = await pkmn.handle_pkmn_request(
             env.tcg_image_metadata_db,
             secured_search_query_string,
             query_params,
-            Languages.EN,
+            lang,
         )
 
     response_headers = {

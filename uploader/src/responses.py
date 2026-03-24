@@ -21,6 +21,10 @@ def create_bad_request_response(msg: str) -> Response:
     return Response(__check_msg_ender(msg), HTTPStatus.BAD_REQUEST)
 
 
+def create_internal_server_error_response(msg: str) -> Response:
+    return Response(__check_msg_ender(msg), HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
 def __check_msg_ender(msg: str) -> str:
     """
     Ensures the response msg ends with a new line character.

@@ -4,10 +4,7 @@ import util
 
 
 async def search_set(db, search_query: str, lang: Languages) -> dict:
-    # Set table name based on language
-    table_name = "image_metadata"
-    if lang == Languages.EN:
-        table_name = "image_metadata"
+    table_name = lang.value
 
     sets = util.get_pokemon_names(search_query)
     search_query, search_params = build_set_query(table_name, sets)
@@ -42,7 +39,7 @@ def build_set_query(table_name: str, sets: list[str]) -> tuple[str, list[str]]:
     for i, name in enumerate(new_sets):
         new_str = "OR " if i > 0 else ""
         new_str += f"setName LIKE ?"
-        params.append(f"{name}")
+        params.append(f"%{name}%")
         query_strs.append(new_str)
 
     # Add ordering string
