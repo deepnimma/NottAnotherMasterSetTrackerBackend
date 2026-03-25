@@ -82,11 +82,14 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
     trainer = trainer_data.get("trainer", "").lower()
 
     # Add image key to metadata
-    image_key = _create_image_key(
-        metadata_json,
-        metadata_json.get("isReverseHolo", False),
-        True if "1st-edition" in tags_str else False,
-    )
+    if metadata_json.get("imageKey"):
+        image_key = _image_keyify(metadata_json["imageKey"])
+    else:
+        image_key = _create_image_key(
+            metadata_json,
+            metadata_json.get("isReverseHolo", False),
+            True if "1st-edition" in tags_str else False,
+        )
     metadata_json["imageKey"] = image_key
 
     # Get image ready for upload
