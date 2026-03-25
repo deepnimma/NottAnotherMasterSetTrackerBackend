@@ -1,23 +1,37 @@
-## Usage
+# downloader
 
-You can run the Worker defined by your new project by executing `wrangler dev` in this
-directory. This will start up an HTTP server and will allow you to iterate on your
-Worker without having to restart `wrangler`.
+Cloudflare Worker — queries card image metadata from D1.
 
-### Types and autocomplete
+## Dev
 
-This project also includes a pyproject.toml with some requirements which
-set up autocomplete and type hints for this Python Workers project.
-
-To get these installed you'll need `uv`, which you can install by following
-https://docs.astral.sh/uv/getting-started/installation/.
-
-Once `uv` is installed, you can run the following:
-
-```
-uv venv
-uv sync
+```bash
+uv venv && uv sync
+wrangler dev
 ```
 
-Then point your editor's Python plugin at the `.venv` directory. You should then have working
-autocomplete and type information in your editor.
+## Query Parameters
+
+| Param | Description |
+|---|---|
+| `q` | Search term (required). Comma-separated for multiple. |
+| `set` | If present, searches by set name instead of pokemon. |
+| `lang` | Language: `en` (default), `jp`, `cn`. |
+| `cameo` | Include cameo appearances. |
+| `trainer` | Search by trainer name. |
+| `illustrator` | Search by illustrator name. |
+| `descending` | Sort newest first. |
+
+## Examples
+
+```bash
+# Pokemon search
+curl "http://localhost:8787?q=pikachu"
+curl "http://localhost:8787?q=pikachu&cameo=1"
+curl "http://localhost:8787?q=ken-sugimori&illustrator=1"
+
+# Set search
+curl "http://localhost:8787?q=scarlet-violet&set=1"
+
+# Language
+curl "http://localhost:8787?q=pikachu&lang=jp"
+```

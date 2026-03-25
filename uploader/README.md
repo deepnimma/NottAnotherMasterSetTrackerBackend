@@ -1,23 +1,29 @@
-## Usage
+# uploader
 
-You can run the Worker defined by your new project by executing `wrangler dev` in this
-directory. This will start up an HTTP server and will allow you to iterate on your
-Worker without having to restart `wrangler`.
+Cloudflare Worker — uploads card images to R2 and inserts metadata into D1.
 
-### Types and autocomplete
+Uploads two R2 objects per image: full resolution (`{imageKey}`) and 25% resolution (`{imageKey}-low`).
 
-This project also includes a pyproject.toml with some requirements which
-set up autocomplete and type hints for this Python Workers project.
+## Dev
 
-To get these installed you'll need `uv`, which you can install by following
-https://docs.astral.sh/uv/getting-started/installation/.
-
-Once `uv` is installed, you can run the following:
-
-```
-uv venv
-uv sync
+```bash
+uv venv && uv sync
+wrangler dev
 ```
 
-Then point your editor's Python plugin at the `.venv` directory. You should then have working
-autocomplete and type information in your editor.
+## Request Format
+
+`POST /` with `multipart/form-data`:
+
+| Field | Type | Description |
+|---|---|---|
+| `image` | file | PNG image |
+| `metadata` | JSON | Card metadata (see schema) |
+
+## Example
+
+```bash
+curl -X POST http://localhost:8787 \
+  -F "image=@card.png" \
+  -F 'metadata={"cardTitle":"Pikachu", ...}'
+```
