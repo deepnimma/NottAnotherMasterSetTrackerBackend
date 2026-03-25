@@ -1,6 +1,8 @@
+import io
 import pyodide.ffi
 from workers import Response
 import json
+from PIL import Image
 
 import schema
 
@@ -131,6 +133,19 @@ async def handle(form_data, r2_bucket, metadata_db) -> Response:
         return responses.create_internal_server_error_response(
             f"Failed to upload image to storage. DB record rolled back.\n"
         )
+
+    # Generate and upload 25% resolution version
+    low_image_key = f"{image_key}-low"
+    img = Image.open(io.BytesIO(image_bytes))
+    low_w = max(1, img.width // 4)
+    low_h = max(1, img.height // 4)
+    low_img = img.resize((low_w, low_h), Image.LANCZOS)
+    low_buf = io.BytesIO()
+    low_img.save(low_buf, format="PNG")
+    low_js_buffer = pyodide.ffi.to_js(low_buf.getvalue())
+    await r2_bucket.put(
+        low_image_key, low_js_buffer, http_metadata={"contentType": "image/png"}
+    )
 
     return responses.create_ok_response(
         f"Image with key: {image_key} released on {release_date_str} has been pushed to the database.\n\n"
